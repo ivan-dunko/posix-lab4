@@ -20,8 +20,10 @@ void *routine(void *data){
         exitWithFailure("routine", EINVAL);
     char *str = (char*)(data);
     
-    while (1)
+    while (1){
+        pthread_testcancel();
         printf("%.256s\n", str);
+    }
 
     return SUCCESS_CODE;
 }
