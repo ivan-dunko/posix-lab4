@@ -32,7 +32,12 @@ int main(int argc, char **argv){
     int arg_ind = argc > 1;
     
     pthread_t pid;
-    int err = pthread_create(&pid, NULL, routine, (void*)(argv[arg_ind]));
+    char *str = (char*)malloc(sizeof(char) * (strlen(argv[arg_ind]) + 1));
+    if (str == NULL)
+        exitWithFailure("main:", ENOMEM);
+
+    strcpy(str, argv[arg_ind]);
+    int err = pthread_create(&pid, NULL, routine, (void*)(str));
     if (err == ERROR_CODE)
         exitWithFailure("main", errno);
 
@@ -41,5 +46,5 @@ int main(int argc, char **argv){
     if (err == ERROR_CODE)
         exitWithFailure("main", errno);
 
-    return 0;
+    pthread_exit((void*)SUCCESS_CODE);
 }
