@@ -8,6 +8,8 @@
 #define MAX_LEN 256
 #define ERROR_CODE -1
 #define SUCCESS_CODE 0
+/* text to be printed */
+#define TEXT "aaa"
 
 void exitWithFailure(const char *msg, int errcode){
     errno = errcode;
@@ -16,28 +18,23 @@ void exitWithFailure(const char *msg, int errcode){
 }
 
 void *routine(void *data){
-    if (data == NULL)
-        exitWithFailure("routine", EINVAL);
-    char *str = (char*)(data);
-    
     while (1){
+        /* 
+            explicit cancellation point
+            (since Solaris printf doesn`t have
+            implicit one)
+        */
         pthread_testcancel();
-        printf("%.256s\n", str);
+        printf("%.256s\n", TEXT);
     }
 
     return SUCCESS_CODE;
 }
 
 int main(int argc, char **argv){
-    int arg_ind = argc > 1;
-    
     pthread_t pid;
-    char *str = (char*)malloc(sizeof(char) * (strlen(argv[arg_ind]) + 1));
-    if (str == NULL)
-        exitWithFailure("main:", ENOMEM);
 
-    strcpy(str, argv[arg_ind]);
-    int err = pthread_create(&pid, NULL, routine, (void*)(str));
+    int err = pthread_create(&pid, NULL, routine, NULL);
     if (err == ERROR_CODE)
         exitWithFailure("main", errno);
 
@@ -46,5 +43,9 @@ int main(int argc, char **argv){
     if (err == ERROR_CODE)
         exitWithFailure("main", errno);
 
+    /*
+        calling pthread_exit not to terminate
+        thread before cancellation
+    */
     pthread_exit((void*)SUCCESS_CODE);
 }
